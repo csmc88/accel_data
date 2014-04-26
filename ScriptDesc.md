@@ -1,17 +1,17 @@
 R Script Explanation - run_analysis.R
 =====================================
 
-This document explains how the functions written inside *run_analysis.R* work together to process Samsung's Accelerometer Raw Data into a tidy dataset as requested by the Peer Assignment Instructions. For this specific task the script was partitioned in several functions that cooperate for this purpose. In the following sections explain how each function works as well as how each relate to the assignment instructions.  
+This document contains a more throughful explanations on how the functions written inside *run_analysis.R* work together to process Samsung's Accelerometer Raw Data into a tidy dataset as requested by the Peer Assignment Instructions. For this specific task the script was partitioned in several functions that cooperate for this purpose. In the following sections explain how each function works as well as how each relate to the assignment instructions.  
 
-The Assignment instructions provided in the Coursera webpage are listed below and will be referenced during the explanation contained in this document.
+The Assignment instructions provided in the Coursera webpage are listed below and will be referenced during the explanation contained in this document.  
 
-1. Merges the training and the test sets to create one data set.
-2. Extracts only the measurements on the mean and standard deviation for each measurement. 
-3. Uses descriptive activity names to name the activities in the data set
-4. Appropriately labels the data set with descriptive activity names. 
-5. Creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+1. Merges the training and the test sets to create one data set.  
+2. Extracts only the measurements on the mean and standard deviation for each measurement.   
+3. Uses descriptive activity names to name the activities in the data set  
+4. Appropriately labels the data set with descriptive activity names.   
+5. Creates a second, independent tidy data set with the average of each variable for each activity and each subject.  
 
-Each section explains one subfunction. The last section explains the main controlling function.
+Each section explains one subfunction. The last section explains the main controlling function.  
 
 
 
@@ -19,9 +19,9 @@ Each section explains one subfunction. The last section explains the main contro
 ---------------------------
 
    The argument `type` receives a character vector of length one that will be used to identify the subdirectory that must be read as well as to build the file names required. It is important that this holds true else the function fails.  
-   The argument `baseDir` receives a character vector of length one that contains the name of the Samsung Accelerometer Data directory that holds all remaining files for analysis. 
+   The argument `baseDir` receives a character vector of length one that contains the name of the Samsung Accelerometer Data directory that holds all remaining files for analysis.  
    
-   The purpose of this function is to sequentially read all files of a specific `type` within the `baseDir` and bind them. It returns a single complete dataset.  
+   The purpose of this function is to sequentially read all files of a specific `type` within the `baseDir` and bind them. It returns a single complete dataset.   
    
 ```{r}
 fileNames <- paste0(c('y_','subject_','X_'),type,'.txt')  
@@ -38,7 +38,7 @@ return(dataset)
    
    The first line uses the  `lapply` cycle to read all items in `files` using the default values for the `read.table` function. It is inside a `do.call` loop which takes each data frame inside the `lapply` reference and uses the `cbind` function to output a single data frame saved in `dataset`. The return function then finishes the `ReadFiles` function and returns a complete dataset for the `type` parameter.  
    
-   This function is used to satisfy Instruction #1 in `GetAllData` as well as concepts of tidy data regarding column names.
+   This function is used to satisfy Instruction #1 in `GetAllData` as well as concepts of tidy data regarding column names.  
    
    
    
@@ -54,7 +54,7 @@ return(dataset)
 dataset <- do.call(rbind,lapply(required,ReadFiles, baseDir))
 ``` 
 
-   The `lapply` function will produce a list with the complete `required` data frames. The `do.call` cycle will merge them using `rbind` to produce the over-all complete data frame saved in `dataset`.
+   The `lapply` function will produce a list with the complete `required` data frames. The `do.call` cycle will merge them using `rbind` to produce the over-all complete data frame saved in `dataset`.  
    
 ```{r}  
 featurePath <- file.path(baseDir,'features.txt')
@@ -72,7 +72,7 @@ dataset <- dataset[order(dataset$activity,dataset$subjectID),]
 
 ```{r}  
 subjects <- unique(dataset$subjectID)
-subjectNames <- paste0('Subject #',subjects)
+subjectNames <- paste0('Subject#',subjects)
 dataset[,2]  <- factor(dataset[,2],subjects, subjectNames)
   
 return(dataset)
@@ -80,55 +80,54 @@ return(dataset)
 
   The first line extracts the unique values of the column 'subjectID' and assigns them to `subjects`. The second line generates appropriate subject name using the `paste0` function and R's Recycling Rule assigning the result to `subjectNames`. The third line replaces the values in the 'subjectID' column of `dataset` with the `factor` equivalent using `subjects` and `subjectNames` as `levels` and `labels` respectively. The fourth line returns `dataset` as the result of `GetAllData` and ends the function execution.  
 
-   This function helps to satisfy Instruction #1 as well as tidy data concepts.
+   This function helps to satisfy Instruction #1 as well as tidy data concepts.  
   
   
   
 `MeanStdCols (colNames)`
 ------------------------
 
-   The argument `colNames` receives a character vector containing the column names of a dataset.
+   The argument `colNames` receives a character vector containing the column names of a dataset.  
    
-   The purpose of this function is to return a numeric vector containing the indices of columns that contain either a mean or standard deviation value.
+   The purpose of this function is to return a numeric vector containing the indices of columns that contain either a mean or standard deviation value.  
    
 ```{r}  
 positions <- grep('mean[(][)]|std[(][)]',colNames)
 return(positions)
 ``` 
 
-   The first line runs a Regular Expression over the `colNames` vector and returns a numeric vector containing the indices to columns containing 'mean()' or 'std()' in their name. The regular expression `'mean[(][)]|std[(][)]'` was built rudimentarily with this purpose. The second line returns the obtained vector and finished the function execution.  
+   The first line runs a Regular Expression over the `colNames` vector and returns a numeric vector containing the indices to columns containing 'mean()' or 'std()' in their name. The regular expression `'mean[(][)]|std[(][)]'` was built rudimentarily with this purpose. The second line returns the obtained vector and finished the function execution.   
    
-   This function helps to satisfy Intruction #2.
+   This function helps to satisfy Intruction #2.  
    
 
    
 `CleanData (baseDir, required)`
 ----------------------------------------------------------------
 
-   The argument `baseDir` receives a character vector of length one that contains the name of the Samsung Accelerometer Data directory that holds all remaining files for analysis.  It defaults to `'UCI HAR Dataset'`.  
-   The argument `required` receives a character vector which contains the names of all subfolders inside `baseDir` that must be read. It should also be part of the file name format explained in the previous section. It defaults to `c('train','test')`.  
+   The argument `baseDir` receives a character vector of length one that contains the name of the Samsung Accelerometer Data directory that holds all remaining files for analysis.  It defaults to `'UCI HAR Dataset'`.   
+   The argument `required` receives a character vector which contains the names of all subfolders inside `baseDir` that must be read. It should also be part of the file name format explained in the previous section. It defaults to `c('train','test')`.   
    
-   The purpose of this function is to process the raw data contained in `baseDir` and transform it into a tidy dataset.
+   The purpose of this function is to process the raw data contained in `baseDir` and transform it into a tidy dataset. It does so by calling the other subfunctions explained in this document as well using other R programming concepts and the reshape2 library.   
    
    
 ```{r}  
 dataset <- GetAllData(baseDir,required)
 ``` 
 
-   This calls the `GetAllData` function with the `baseDir` and `required` arguments. It returns a dataset as described in the function description. The output of `GetAllData` is saved in `dataset`.
+   This calls the `GetAllData` function with the `baseDir` and `required` arguments. It returns a dataset as described in the function description. The output of `GetAllData` is saved in `dataset`.  
    
    This satisfies Instruction #1.
    
 ```{r}  
 colNames <- names(dataset)
 dataset <- dataset[c(1,2, MeanStdCols(colNames))]
-names(dataset) <- FormatColumnNames(colNames)
 ``` 
 
-   The first line gets the column names of the dataset using the `names` function and assigns the values to the `colNames` variable. The variable will be used on the following lines. The second line subsets the columns of the `dataset` object. It does so by combining the values of 1 and 2 which refer to 'activity' and 'subjectID' columns respectively, together with the output from the `MeanStdCols` function ran with `colNames` as input parameter. The third line replaces the column names of `dataset` using the output from the `FormatColumnNames` function. The `FormatColumnNames` is called with `colNames` as an input parameter.
-   Both `MeanStdCols` and `FormatColumnNames` will return the vectors described in previous sections.
+   The first line gets the column names of the dataset using the `names` function and assigns the values to the `colNames` variable. The variable will be used on the following lines. The second line subsets the columns of the `dataset` object. It does so by combining the values of 1 and 2 which refer to 'activity' and 'subjectID' columns respectively, together with the output from the `MeanStdCols` function ran with `colNames` as input parameter.   
+   `MeanStdCols` will return the vectors described in previous sections.  
    
-   These code lines satisfy Instruction #2 and concepts of tidy data.
+   These code lines satisfy Instruction #2 and concepts of tidy data.  
    
 ```{r}  
 labelsPath <- file.path(baseDir,'activity_labels.txt')
@@ -136,27 +135,48 @@ activities <- read.table(labelsPath)
 dataset[,1] <- factor(dataset[,1], activities[,1],activities[,2])
 ``` 
 
-   The first line creates the path to the 'activity_lables.txt' file using the `file.path` function and saves it in `labelsPath`. The second line uses `labelsPath` to read the corresponding file with the `read.table` function using default parameters and saves the resulting data frame in `activities`. The third line replaces the values in the first column of `dataset` with the `factor` equivalent using the columns 1 and 2 of `activities` as `levels` and `labels` respectively.
+   The first line creates the path to the 'activity_lables.txt' file using the `file.path` function and saves it in `labelsPath`. The second line uses `labelsPath` to read the corresponding file with the `read.table` function using default parameters and saves the resulting data frame in `activities`. The third line replaces the values in the first column of `dataset` with the `factor` equivalent using the columns 1 and 2 of `activities` as `levels` and `labels` respectively.  
    
-   Up to this point we have covered the first 4 steps of the **Peer Assignment** for **Getting & Cleaning Data** and have obtained what should be our **_tidy dataset_**.  
+   Up to this point we have covered the first 4 steps of the **Peer Assignment** for **Getting & Cleaning Data** and have obtained what should be our **_tidy dataset_**.   
    
-   These code lines satisfy Instructions #3 and #4 as well as tidy data concepts.
+   These code lines satisfy Instructions #3 and #4 as well as tidy data concepts.  
    
+```{r} 
+names(dataset) <- gsub('[(][)]','',names(dataset))
+names(dataset) <- gsub('-','.',names(dataset))   
+```
+
+   The first line replaces the column names after having eliminated all parenthesis `()` characters from the orignal names. The second line replaces the column names after having replaced all hyphens `-` with `.`.
+
 ```{r}  
 library(reshape2)
 melted  <- melt(dataset, id = c('activity','subjectID'))
 morphed <- dcast(melted, activity + subjectID ~ variable, mean, na.rm=TRUE)
 ``` 
 
-   The first line loads the reshape2 package to the R interpreter. The second line uses the `melt` over `dataset` using the columns 'activity' and 'subjectID' as the `id` parameter. The function will return the melted data frame which sepparates all values originally in `dataset` by the unique combinations of 'activity' and 'subjectID'. The data frame includes the columns 'activity','subjectID','variable' and 'value' The third line executes the `dcast` function using `melted` as the reference data frame to execute the `mean` function over the subsets defined by the formula `activity + subjectID ~ variable`. The `na.rm` parameter of the `mean` function is set to `TRUE`. The result from `dcast` is a data frame consisting of $NumberOfSubjects * NumberOfActivities$ rows with the same column structure and names as `dataset`. The data frame is saved in `morphed`.
+   The first line loads the reshape2 package to the R interpreter. The second line uses the `melt` over `dataset` using the columns 'activity' and 'subjectID' as the `id` parameter. The function will return the melted data frame which sepparates all values originally in `dataset` by the unique combinations of 'activity' and 'subjectID'. The data frame includes the columns 'activity','subjectID','variable' and 'value' The third line executes the `dcast` function using `melted` as the reference data frame to execute the `mean` function over the subsets defined by the formula `activity + subjectID ~ variable`. The `na.rm` parameter of the `mean` function is set to `TRUE`. The result from `dcast` is a data frame consisting of $NumberOfSubjects * NumberOfActivities$ rows with the same column structure and names as `dataset`. The data frame is saved in `morphed`.  
    
-   Since `dataset` was a data frame ordered from its creation using 'activities' as primary key and 'subjectID' as the secondary key the resulting data frame after `melt` and `dcast` functions are applied is also sorted in the same way giving it a tidy order.
+   Since `dataset` was a data frame ordered from its creation using 'activities' as primary key and 'subjectID' as the secondary key the resulting data frame after `melt` and `dcast` functions are applied is also sorted in the same way giving it a tidy order.  
    
-   These code lines satisfy Instruction #5.
+   These code lines satisfy Instruction #5.  
 
 ```{r}  
 write.table(dataset,"complete.txt",sep=',',row.names=FALSE)
 write.table(morphed,"tidy.txt",sep=',',row.names=FALSE)
+
+return(morphed)
 ```
 
-   The first line saves `dataset` to a file named 'complete.txt' using the `write.table` function and setting its `row.names` parameter to `FALSE`. The second line saves `morphed` to a file named 'tidy.txt' using the `write.table` function and setting its `row.names` parameter to `FALSE`.
+   The first line saves `dataset` to a file named 'complete.txt' using the `write.table` function and setting its `row.names` parameter to `FALSE`. The second line saves `morphed` to a file named 'tidy.txt' using the `write.table` function and setting its `row.names` parameter to `FALSE`. The third line finished the function execution by returning `morphed` as the cleaned up data frame.  
+   
+   This satisfies all Peer Assignment Instructions.
+   
+   
+   
+   
+Output Description
+==================
+
+   The output of run_analysis.R is sent to the executing console as well as saved in a TXT file in the working directory. The file saved as 'tidy.txt' contains the result table up to Instruction #5. An additional file up to Instruction #4 is also under the name 'complete.txt'.
+   
+   Both file contain headers.

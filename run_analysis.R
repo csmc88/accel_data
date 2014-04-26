@@ -3,25 +3,29 @@ CleanData <- function(baseDir = 'UCI HAR Dataset',required = c('train','test')){
 	#Obtain all raw data in a single data frame
 	dataset <- GetAllData(baseDir,required)
 	
-	#Subset Columns and Rename Columns
+	#Subset Columns
 	colNames <- names(dataset)
 	dataset <- dataset[c(1,2, MeanStdCols(colNames))]
-	names(dataset)[-1:-2] <- FormatColNames(colNames[-1:-2])
 	
-# Uses descriptive activity names to name activities in the dataset
-# Appropriately labels the data set with descriptive activity names.
+	#Read labels file and replace corresponding column values
 	labelsPath <- file.path(baseDir,'activity_labels.txt')
 	activities <- read.table(labelsPath)
 	dataset[,1] <- factor(dataset[,1], activities[,1],activities[,2])
+	
+	#Format Column Names
+	names(dataset) <- gsub('[(][)]','',names(dataset))
+	names(dataset) <- gsub('-','.',names(dataset)) 
 
-# Creates a second, independent tidy data set with the average 
-# of each variable for each activity and each subject. 
+	#Reshape to 1 observation per combo of activity and subjectID
 	library(reshape2)
 	melted  <- melt(dataset, id = c('activity','subjectID'))
 	morphed <- dcast(melted, activity + subjectID ~ variable, mean, na.rm=TRUE)
 	
+	#Write dataset and morphed to sepparate TXT files
 	write.table(dataset,"complete.txt",row.names=FALSE)
 	write.table(morphed,"tidy.txt",row.names=FALSE)
+	
+	return(morphed)
 }
 
 #Uses REGEX to extract required columns
@@ -45,7 +49,7 @@ GetAllData <- function(baseDir, required){
 	
 	#Replace subjectID values for factor equivalent
 	subjects <- unique(dataset$subjectID)
-	subjectNames <- paste0('Subject #',subjects)
+	subjectNames <- paste0('Subject#',subjects)
 	dataset[,2]  <- factor(dataset[,2],subjects, subjectNames)
 	
 	return(dataset)
