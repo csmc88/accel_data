@@ -12,7 +12,7 @@ This document describes the output table of run_analysis.R which is displayed in
 Data Description
 ----------------
 
-   The data is obtained after running run_analysis.R given that the [Samsung Accelerometer Data](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) has been succesfully downloaded and unzipped as the [README.md](https://github.com/csmc88/accel_data/blob/master/README.md) suggests to do so.
+   The data is obtained after running run_analysis.R given that the [Samsung Accelerometer Data](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) has been succesfully downloaded and unzipped as the [README](https://github.com/csmc88/accel_data/blob/master/README.md) suggests to do so. Data is composed of Accelerometer and Gyroscope measurements on dimensions X, Y and Z. No specific units are disclosed.
    
    The experiment the data was obtained from consists on 30 subjects performing 6 different tasks and being measured using accelerometer measurements to study their behaviour. The original data collected consisted on 563 columns and 10299 rows divided along 6 files with specific purposes. More information on the README.txt within the Samsung Data.  
    
@@ -118,4 +118,15 @@ Variable Description
 Transformations Applied
 -----------------------
 
-   The data
+   The transformations applied to the original raw data linked in Data Description are enlisted in this section and described for reproducibility purposes. The reader should also refer to the [README](https://github.com/csmc88/accel_data/blob/master/README.md) and the [ScriptDesc](https://github.com/csmc88/accel_data/blob/master/ScriptDesc.md) files which further explain the code that performs these transformations.
+   
+   * All raw data files are combined to a single data frame
+   * Preset column order is: 'activity', 'subjectID' and all available features under study.
+   * Column names are extracted from 'features.txt'
+   * Columns are named as 'activity', 'subjectID', and the names extracted from 'features.txt'
+   * Data frame is sorted according to 'activity' and 'subjectID' values
+   * 'subjectID' column is replaced by a factor equivalent
+   * Only column names that refer to mean and standard deviation (std) values are kept.
+   * Column names are formatted to eliminate parenthesis '()' characters
+   * Column names are modified to replace hyphen '-' characters with dots '.'
+   * Data frame is transformed to the average of each feature for each 'activity' and 'subjectID'
