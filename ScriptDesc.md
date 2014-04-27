@@ -59,26 +59,26 @@ dataset <- do.call(rbind,lapply(required,ReadFiles, baseDir))
 ```{r}  
 featurePath <- file.path(baseDir,'features.txt')
 colNames <- read.table(featurePath, colClasses = 'character')
-names(dataset) <- c('activity','subjectID',colNames[,2])
+names(dataset) <- c('activity','subject',colNames[,2])
 ``` 
 
-   The first line will generate the path to `features.txt` which is the file containing the column names for all variables under study. The second line reads the required file using `read.table` with `colClasses = 'character'`. It returns a data frame with two columns. The third line replaces the names of the complete dataset with a vector consisting of two preset names `'activity'` and `'subjectID'` and the values inside the second column of `colNames`. Since the column order was chosen inside the `ReadFiles` function this is a correct assignment.  
+   The first line will generate the path to `features.txt` which is the file containing the column names for all variables under study. The second line reads the required file using `read.table` with `colClasses = 'character'`. It returns a data frame with two columns. The third line replaces the names of the complete dataset with a vector consisting of two preset names `'activity'` and `'subject'` and the values inside the second column of `colNames`. Since the column order was chosen inside the `ReadFiles` function this is a correct assignment.  
    
 ```{r}  
-dataset <- dataset[order(dataset$activity,dataset$subjectID),]
+dataset <- dataset[order(dataset$activity,dataset$subject),]
 ``` 
 
-   This line reorganizes the dataset using the `order` function with `activity` as the primary sorting key and `subjectID` as the secondary sorting key. Ordering the data frame at this point is important for future function use and data manipulation.  
+   This line reorganizes the dataset using the `order` function with `activity` as the primary sorting key and `subject` as the secondary sorting key. Ordering the data frame at this point is important for future function use and data manipulation.  
 
 ```{r}  
-subjects <- unique(dataset$subjectID)
+subjects <- unique(dataset$subject)
 subjectNames <- paste0('Subject#',subjects)
 dataset[,2]  <- factor(dataset[,2],subjects, subjectNames)
   
 return(dataset)
 ``` 
 
-  The first line extracts the unique values of the column 'subjectID' and assigns them to `subjects`. The second line generates appropriate subject name using the `paste0` function and R's Recycling Rule assigning the result to `subjectNames`. The third line replaces the values in the 'subjectID' column of `dataset` with the `factor` equivalent using `subjects` and `subjectNames` as `levels` and `labels` respectively. The fourth line returns `dataset` as the result of `GetAllData` and ends the function execution.  
+  The first line extracts the unique values of the column 'subject' and assigns them to `subjects`. The second line generates appropriate subject name using the `paste0` function and R's Recycling Rule assigning the result to `subjectNames`. The third line replaces the values in the 'subject' column of `dataset` with the `factor` equivalent using `subjects` and `subjectNames` as `levels` and `labels` respectively. The fourth line returns `dataset` as the result of `GetAllData` and ends the function execution.  
 
    This function helps to satisfy Instruction #1 as well as tidy data concepts.  
   
@@ -124,7 +124,7 @@ colNames <- names(dataset)
 dataset <- dataset[c(1,2, MeanStdCols(colNames))]
 ``` 
 
-   The first line gets the column names of the dataset using the `names` function and assigns the values to the `colNames` variable. The variable will be used on the following lines. The second line subsets the columns of the `dataset` object. It does so by combining the values of 1 and 2 which refer to 'activity' and 'subjectID' columns respectively, together with the output from the `MeanStdCols` function ran with `colNames` as input parameter.   
+   The first line gets the column names of the dataset using the `names` function and assigns the values to the `colNames` variable. The variable will be used on the following lines. The second line subsets the columns of the `dataset` object. It does so by combining the values of 1 and 2 which refer to 'activity' and 'subject' columns respectively, together with the output from the `MeanStdCols` function ran with `colNames` as input parameter.   
    `MeanStdCols` will return the vectors described in previous sections.  
    
    These code lines satisfy Instruction #2 and concepts of tidy data.  
@@ -142,21 +142,24 @@ dataset[,1] <- factor(dataset[,1], activities[,1],activities[,2])
    These code lines satisfy Instructions #3 and #4 as well as tidy data concepts.  
    
 ```{r} 
-names(dataset) <- gsub('[(][)]','',names(dataset))
-names(dataset) <- gsub('-','.',names(dataset))   
+names(dataset) <- gsub('([(][)])|[-]','',names(dataset))
+names(dataset) <- gsub('^t','time',names(dataset))
+names(dataset) <- gsub('^f','frequency',names(dataset))
+names(dataset) <- gsub('BodyBody','body',names(dataset))
+names(dataset) <- tolower(names(dataset))    
 ```
 
-   The first line replaces the column names after having eliminated all parenthesis `()` characters from the orignal names. The second line replaces the column names after having replaced all hyphens `-` with `.`.
+   The first line eliminates all parenthesis `()` and hyphens `-` in the column names of `dataset`. The second line replaces the prefix 't' with 'time'. The third line replaces the prefix 'f' with 'frequency'. The fourth line replaces the 'BodyBody' annoyance with 'body'. The fifth line converts all column names to lower case.
 
 ```{r}  
 library(reshape2)
-melted  <- melt(dataset, id = c('activity','subjectID'))
-morphed <- dcast(melted, activity + subjectID ~ variable, mean, na.rm=TRUE)
+melted  <- melt(dataset, id = c('activity','subject'))
+morphed <- dcast(melted, activity + subject ~ variable, mean, na.rm=TRUE)
 ``` 
 
-   The first line loads the reshape2 package to the R interpreter. The second line uses the `melt` over `dataset` using the columns 'activity' and 'subjectID' as the `id` parameter. The function will return the melted data frame which sepparates all values originally in `dataset` by the unique combinations of 'activity' and 'subjectID'. The data frame includes the columns 'activity','subjectID','variable' and 'value' The third line executes the `dcast` function using `melted` as the reference data frame to execute the `mean` function over the subsets defined by the formula `activity + subjectID ~ variable`. The `na.rm` parameter of the `mean` function is set to `TRUE`. The result from `dcast` is a data frame consisting of $NumberOfSubjects * NumberOfActivities$ rows with the same column structure and names as `dataset`. The data frame is saved in `morphed`.  
+   The first line loads the reshape2 package to the R interpreter. The second line uses the `melt` over `dataset` using the columns 'activity' and 'subject' as the `id` parameter. The function will return the melted data frame which sepparates all values originally in `dataset` by the unique combinations of 'activity' and 'subject'. The data frame includes the columns 'activity','subject','variable' and 'value' The third line executes the `dcast` function using `melted` as the reference data frame to execute the `mean` function over the subsets defined by the formula `activity + subject ~ variable`. The `na.rm` parameter of the `mean` function is set to `TRUE`. The result from `dcast` is a data frame consisting of $NumberOfSubjects * NumberOfActivities$ rows with the same column structure and names as `dataset`. The data frame is saved in `morphed`.  
    
-   Since `dataset` was a data frame ordered from its creation using 'activities' as primary key and 'subjectID' as the secondary key the resulting data frame after `melt` and `dcast` functions are applied is also sorted in the same way giving it a tidy order.  
+   Since `dataset` was a data frame ordered from its creation using 'activities' as primary key and 'subject' as the secondary key the resulting data frame after `melt` and `dcast` functions are applied is also sorted in the same way giving it a tidy order.  
    
    These code lines satisfy Instruction #5.  
 

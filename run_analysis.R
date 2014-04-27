@@ -13,13 +13,17 @@ CleanData <- function(baseDir = 'UCI HAR Dataset',required = c('train','test')){
 	dataset[,1] <- factor(dataset[,1], activities[,1],activities[,2])
 	
 	#Format Column Names
-	names(dataset) <- gsub('[(][)]','',names(dataset))
-	names(dataset) <- gsub('-','.',names(dataset)) 
+	names(dataset) <- gsub('([(][)])|[-]','',names(dataset))
+	names(dataset) <- gsub('^t','time',names(dataset))
+	names(dataset) <- gsub('^f','frequency',names(dataset))
+	names(dataset) <- gsub('BodyBody','body',names(dataset))
+	names(dataset) <- tolower(names(dataset))
+	
 
-	#Reshape to 1 observation per combo of activity and subjectID
+	#Reshape to 1 observation per combo of activity and subject
 	library(reshape2)
-	melted  <- melt(dataset, id = c('activity','subjectID'))
-	morphed <- dcast(melted, activity + subjectID ~ variable, mean, na.rm=TRUE)
+	melted  <- melt(dataset, id = c('activity','subject'))
+	morphed <- dcast(melted, activity + subject ~ variable, mean, na.rm=TRUE)
 	
 	#Write dataset and morphed to sepparate TXT files
 	write.table(dataset,"complete.txt",row.names=FALSE)
@@ -42,13 +46,13 @@ GetAllData <- function(baseDir, required){
 	#Read and apply correct COLUMN NAMES
 	featurePath <- file.path(baseDir,'features.txt')
 	colNames <- read.table(featurePath, colClasses = 'character')
-	names(dataset) <- c('activity','subjectID',colNames[,2])
+	names(dataset) <- c('activity','subject',colNames[,2])
 	
 	#Organize dataset by activity and subject
-	dataset <- dataset[order(dataset$activity,dataset$subjectID),]
+	dataset <- dataset[order(dataset$activity,dataset$subject),]
 	
-	#Replace subjectID values for factor equivalent
-	subjects <- unique(dataset$subjectID)
+	#Replace subject values for factor equivalent
+	subjects <- unique(dataset$subject)
 	subjectNames <- paste0('Subject#',subjects)
 	dataset[,2]  <- factor(dataset[,2],subjects, subjectNames)
 	
